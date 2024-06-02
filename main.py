@@ -1,32 +1,11 @@
-from fastapi import FastAPI, HTTPException, Depends, status
-from pydantic import BaseModel
-from typing import Annotated
-import models
-from database import engine, SessionLocal
+from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
-import uvicorn
+import models, schemas, crud
+from database import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-models.Base.metadata.create_all(engine)
-
-
-class StudentBase(BaseModel):
-    id: int
-    studentname: str
-
-class BookBase(BaseModel):
-    id: int
-    bookname: str
-    author: str
-
-class InventoryBase(BaseModel):
-    bookid: int
-    count: int
-
-class BookIssueBase(BaseModel):
-    issueid: int
-    studentid: int
-    bookid: int
 
 def get_db():
     db = SessionLocal()
@@ -35,24 +14,28 @@ def get_db():
     finally:
         db.close()
 
+@app.post("/students/", response_model=schemas.Student)
+def create_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
+    return crud.create_student(db=db, student=student)
 
-db_dependency = Annotated[Session, Depends(get_db)]
+@app.post("/books/", response_model=schemas.Book)
+def create_book(book: schemas.BookCreate, db: Session = Depends(get_db)):
+    return crud.create_book(db=db, book=book)
 
-@app.post('/students/', status_code=status.HTTP_201_CREATED)
-async def create_student(student: StudentBase, db: db_dependency):
-    db_student = models.Student(**student.dict())
-    db.add(db_student)
-    db.commit()
+@app.post("/inventory/", response_model=schemas.Inventory)
+def update_inventory(inventory: schemas.InventoryCreate, db: Session = Depends(get_db)):
+    return crud.update_inventory(db=db, inventory=inventory)
 
-@app.get('/students/{student_id}', status_code=status.HTTP_200_OK)
-async def read_student(student_id: int, db: db_dependency):
-    student = db.query(models.Student).filter(models.Student.id == student_id).first()
-    if student is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Student not found')
-    return student
+@app.post("/issue/", response_model=schemas.BookIssue)
+def issue_book(book_issue: schemas.BookIssueCreate, db: Session = Depends(get_db)):
+    try:
+        return crud.issue_book(db=db, book_issue=book_issue)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-
-
-#Code for debugging purposes
-if __name__ == '__main__':
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+@app.post("/return/{issueid}", response_model=schemas.BookIssue)
+def return_book(issueid: int, db: Session = Depends(get_db)):
+    try:
+        return crud.return_book(db=db, issueid=issueid)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
