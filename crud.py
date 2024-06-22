@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 import models, schemas
 
 def create_student(db: Session, student: schemas.StudentCreate):
@@ -9,7 +10,7 @@ def create_student(db: Session, student: schemas.StudentCreate):
     return db_student
 
 def create_book(db: Session, book: schemas.BookCreate):
-    db_book = models.Book(title=book.title, author=book.author)
+    db_book = models.Book(title=book.title, author=book.author, numofissues=book.numofissues)
     db.add(db_book)
     db.commit()
     db.refresh(db_book)
@@ -35,6 +36,7 @@ def issue_book(db: Session, book_issue: schemas.BookIssueCreate):
         raise ValueError("Book cannot be issued")
 
     db_inventory.quantity -= 1
+    db_book.numofissues += 1
     db_book_issue = models.BookIssue(bookid=book_issue.bookid, studentid=book_issue.studentid, issue_date=book_issue.issue_date)
     db.add(db_book_issue)
     db.commit()
@@ -53,3 +55,7 @@ def return_book(db: Session, issueid: int):
     db.delete(db_issue)
     db.commit()
     return db_issue
+
+def max_issues(db: Session):
+    db_book = db.query(models.Book).order_by(desc(models.Book.numofissues)).limit(5).all()
+    return db_book

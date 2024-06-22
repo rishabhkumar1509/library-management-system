@@ -16,7 +16,8 @@ class Student(StudentBase):
 
 class BookBase(BaseModel):
     title: str
-    author: str
+    author: str  
+    numofissues: int
 
 class BookCreate(BookBase):
     pass

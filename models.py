@@ -14,6 +14,7 @@ class Book(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(50), index=True)
     author = Column(String(50), index=True)
+    numofissues = Column(Integer, default=0, nullable=False)
 
 class Inventory(Base):
     __tablename__ = 'inventory'

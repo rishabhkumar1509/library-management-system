@@ -39,3 +39,7 @@ def return_book(issueid: int, db: Session = Depends(get_db)):
         return crud.return_book(db=db, issueid=issueid)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+@app.get("/popular-books/", response_model=list[schemas.Book])
+def popular_books(db: Session = Depends(get_db)):
+    return crud.max_issues(db=db)
