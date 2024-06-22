@@ -9,6 +9,7 @@ This project is a simple Library Management System API built with FastAPI, SQLAl
 - Update books inventory
 - Issue books to students and return them
 - Enforce a limit of 3 books per student at a time
+- Get a list of 5 popular books among Students on the basis of number of times they were issued
 - Proper error handling with HTTP 400 responses for various exceptions
 
 ## Project Structure
@@ -165,6 +166,45 @@ Defines the dependencies required for the project.
         "studentid": 1,
         "issue_date": "2023-01-01T00:00:00"
     }
+    ```
+
+### Popular Books
+- **URL:** `/popular-books/`
+- **Method:** `GET`
+- **Response:**
+    ```json
+    [
+      {
+        "id": 2,
+        "title": "Book B",
+        "author": "Author B",
+        "numofissues": 4        
+      },
+      {
+        "id": 1,
+        "title": "Book A",
+        "author": "Author A",
+        "numofissues": 2        
+      },
+      {
+        "id": 3,
+        "title": "Book C",
+        "author": "Author C",
+        "numofissues": 1        
+      },
+      {
+        "id": 4,
+        "title": "Book D",
+        "author": "Author D",
+        "numofissues": 1        
+      },
+      {
+        "id": 5,
+        "title": "Book E",
+        "author": "Author E",
+        "numofissues": 1        
+      }
+    ]
     ```
 
 ## Error Handling
